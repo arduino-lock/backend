@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/boltdb/bolt"
+
 	"github.com/arduino-lock/golockserver"
 	h "github.com/arduino-lock/golockserver/http"
 )
@@ -14,6 +16,13 @@ func main() {
 		panic(err)
 	}
 
+	db, err := bolt.Open(cfg.DatabasePath, 0600, nil)
+	if err != nil {
+		panic(err)
+	}
+	defer db.Close()
+	
+	
 	c := &golockserver.Config{
 		Development: cfg.Development,
 		Host:        cfg.Host,

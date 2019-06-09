@@ -6,10 +6,10 @@ import (
 )
 
 type config struct {
-	Development bool
-	Host        string
-	Port        int
-	CardsDB     string
+	Development  bool
+	Host         string
+	Port         int
+	DatabasePath string
 }
 
 func loadConfig(path string) (*config, error) {

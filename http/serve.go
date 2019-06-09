@@ -12,7 +12,7 @@ import (
 func Serve(c *golockserver.Config) {
 	r := mux.NewRouter()
 
-	r.HandleFunc("/time", Wrap(GetTime, c))
+	r.HandleFunc("/time", Wrap(GetTime, c)).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":"+c.Port, r))
 }
