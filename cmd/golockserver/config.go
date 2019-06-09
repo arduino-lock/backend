@@ -9,6 +9,7 @@ type config struct {
 	Development bool
 	Host        string
 	Port        int
+	CardsDB     string
 }
 
 func loadConfig(path string) (*config, error) {
@@ -17,6 +18,8 @@ func loadConfig(path string) (*config, error) {
 	var cfgPath string
 	if len(path) < 1 {
 		cfgPath = "config.json"
+	} else {
+		cfgPath = path
 	}
 
 	f, err := os.Open(cfgPath)
