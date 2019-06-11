@@ -1,9 +1,11 @@
 package golockserver
 
+import "time"
+
 // Card is a single identity for each of the cards
 type Card struct {
-	UID              string
-	CreationUNIXTime int
+	UID     string
+	Created time.Time
 }
 
 // CardService is a an interface for all the methods involving cards
