@@ -1,7 +1,6 @@
 package boltdb
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
@@ -62,13 +61,12 @@ func (s *CardService) Get(uid string) (*golockserver.Card, error) {
 
 		return nil
 	})
+
 	if err != nil {
 		return card, err
 	}
 
-	fmt.Println(card)
-
-	return nil, nil
+	return card, nil
 }
 
 // GetAll fetches all cards from the database

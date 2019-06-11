@@ -52,7 +52,5 @@ func main() {
 		},
 	}
 
-	fmt.Println("Loaded the config file.")
-
 	h.Serve(c)
 }

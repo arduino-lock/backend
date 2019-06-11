@@ -12,6 +12,11 @@ type LockHandler func(w http.ResponseWriter, r *http.Request, c *golockserver.Co
 // Wrap function wraps a standard HTTP function handler with the config
 func Wrap(h LockHandler, c *golockserver.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		// leave the data treatment and the response final handling
+		// to the end of the wrapping function
+		defer func(w http.ResponseWriter) {
+		}(w)
+
 		code, err := h(w, r, c)
 		if err != nil {
 			w.WriteHeader(code)

@@ -1,7 +1,6 @@
 package http
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
@@ -32,19 +31,18 @@ func CardAdd(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (in
 		return 500, err
 	}
 
-	return 200, nil
+	return http.StatusOK, nil
 }
 
 // CardGet fetches a card from the database given its UID
 func CardGet(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (int, error) {
 	id := mux.Vars(r)["id"]
-	fmt.Println("E que crl")
 
 	card, err := c.Services.Cards.Get(id)
 	if err != nil {
-		return 500, err
+		return http.StatusInternalServerError, err
 	}
 
-	fmt.Println(card)
-	return 200, nil
+	jsonPrint(w, card)
+	return http.StatusOK, nil
 }
