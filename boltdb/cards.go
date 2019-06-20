@@ -17,21 +17,19 @@ type CardService struct {
 
 // Add adds a new card to the database
 func (s *CardService) Add(card *golockserver.Card) error {
-	tx, err := s.DB.Begin(true)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-
-	// open bucket
-	b := tx.Bucket([]byte("cards"))
-
 	// Create a string with UNIX time value
 	nowUNIX := strconv.FormatInt(card.Created.Unix(), 10)
 
-	// Save it to the database
-	b.Put([]byte(card.UID), []byte(nowUNIX))
-	if err = tx.Commit(); err != nil {
+	err := s.DB.Update(func(tx *bolt.Tx) error {
+		// select cards bucket
+		b := tx.Bucket([]byte("cards"))
+
+		// put new data into the bucket
+		err := b.Put([]byte(card.UID), []byte(nowUNIX))
+		return err
+	})
+
+	if err != nil {
 		return err
 	}
 
@@ -39,7 +37,7 @@ func (s *CardService) Add(card *golockserver.Card) error {
 }
 
 // Get fetches a card (given its unique ID) from the database
-func (s *CardService) Get(uid string) (*golockserver.Card, error) {
+func (s *CardService) GetByUID(uid string) (*golockserver.Card, error) {
 	card := &golockserver.Card{
 		UID: uid,
 	}
@@ -65,7 +63,7 @@ func (s *CardService) Get(uid string) (*golockserver.Card, error) {
 	if err != nil {
 		return card, err
 	}
-
+	
 	return card, nil
 }
 
