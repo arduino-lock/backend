@@ -13,7 +13,7 @@ import (
 func CardValidate(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (int, error) {
 	vars := mux.Vars(r)
 
-	c.Services.Cards.Get(vars["id"])
+	c.Services.Cards.GetByUID(vars["id"])
 	return 200, nil
 }
 
@@ -38,11 +38,22 @@ func CardAdd(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (in
 func CardGet(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (int, error) {
 	id := mux.Vars(r)["id"]
 
-	card, err := c.Services.Cards.Get(id)
+	card, err := c.Services.Cards.GetByUID(id)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
 
 	jsonPrint(w, card)
+	return http.StatusOK, nil
+}
+
+// CardGetAll fetches all cards from the database
+func CardGetAll(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (int, error) {
+	cards, err := c.Services.Cards.GetAll()
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	jsonPrint(w, cards)
 	return http.StatusOK, nil
 }

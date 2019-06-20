@@ -17,7 +17,7 @@ type CardService struct {
 
 // Add adds a new card to the database
 func (s *CardService) Add(card *golockserver.Card) error {
-	// Create a string with UNIX time value
+	// create a string with UNIX time value
 	nowUNIX := strconv.FormatInt(card.Created.Unix(), 10)
 
 	err := s.DB.Update(func(tx *bolt.Tx) error {
@@ -36,13 +36,14 @@ func (s *CardService) Add(card *golockserver.Card) error {
 	return nil
 }
 
-// Get fetches a card (given its unique ID) from the database
+// GetByUID fetches a card (given its unique ID) from the database
 func (s *CardService) GetByUID(uid string) (*golockserver.Card, error) {
 	card := &golockserver.Card{
 		UID: uid,
 	}
 
 	err := s.DB.View(func(tx *bolt.Tx) error {
+		// select cards bucket
 		b := tx.Bucket([]byte("cards"))
 
 		// Get value from database
@@ -63,13 +64,45 @@ func (s *CardService) GetByUID(uid string) (*golockserver.Card, error) {
 	if err != nil {
 		return card, err
 	}
-	
+
 	return card, nil
 }
 
 // GetAll fetches all cards from the database
 func (s *CardService) GetAll() (*[]golockserver.Card, error) {
-	return nil, nil
+	cards := []golockserver.Card{}
+
+	if err := s.DB.View(func(tx *bolt.Tx) error {
+		// select cards bucket
+		b := tx.Bucket([]byte("cards"))
+
+		if err := b.ForEach(func(key []byte, val []byte) error {
+			// parse unix epoch string to int64
+			unixInt, err := strconv.ParseInt(string(val), 10, 64)
+			if err != nil {
+				return err
+			}
+
+			// create new card
+			newCard := golockserver.Card{
+				UID:     string(key),
+				Created: time.Unix(unixInt, 0),
+			}
+
+			// append new card to cards list
+			cards = append(cards, newCard)
+
+			return nil
+		}); err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return &cards, err
+	}
+
+	return &cards, nil
 }
 
 // Delete deletes a card from the database
