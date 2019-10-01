@@ -10,5 +10,6 @@ type Config struct {
 
 // Services is a struct that joins all the smaller services of the app
 type Services struct {
-	Cards CardService
+	Cards    CardService
+	Database DatabaseService
 }

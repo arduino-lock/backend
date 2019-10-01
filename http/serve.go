@@ -17,6 +17,10 @@ func Serve(c *golockserver.Config) {
 	r.HandleFunc("/time", Wrap(GetTime, c)).Methods("GET")
 	r.HandleFunc("/validate", Wrap(CardValidate, c)).Methods("POST")
 
+	// database subrouter
+	database := r.PathPrefix("/database").Subrouter()
+	database.HandleFunc("/dump", Wrap(DatabaseDump, c)).Methods("GET")
+
 	// cards subrouter
 	cards := r.PathPrefix("/cards/").Subrouter()
 	cards.HandleFunc("/add/{id:[a-z]+}", Wrap(CardAdd, c)).Methods("POST")

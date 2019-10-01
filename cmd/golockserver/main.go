@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/boltdb/bolt"
@@ -24,23 +23,6 @@ func main() {
 	}
 	defer db.Close()
 
-	// Setup buckets
-	db.Update(func(tx *bolt.Tx) error {
-		// Create cards bucket
-		_, err := tx.CreateBucketIfNotExists([]byte("cards"))
-		if err != nil {
-			return fmt.Errorf("Cannot create cards bucket: %s", err)
-		}
-
-		// Create doors bucket
-		_, err = tx.CreateBucketIfNotExists([]byte("doors"))
-		if err != nil {
-			return fmt.Errorf("Cannot create doors bucket: %s", err)
-		}
-
-		return nil
-	})
-
 	c := &golockserver.Config{
 		Development: cfg.Development,
 		Host:        cfg.Host,
@@ -49,8 +31,13 @@ func main() {
 			Cards: &boltdb.CardService{
 				DB: db,
 			},
+			Database: &boltdb.DatabaseService{
+				DB: db,
+			},
 		},
 	}
+
+	c.Services.Database.Setup(db)
 
 	h.Serve(c)
 }
