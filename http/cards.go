@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/fatih/color"
 	"github.com/gorilla/mux"
 
 	"github.com/arduino-lock/golockserver"
@@ -12,6 +13,8 @@ import (
 // CardValidate is a card validator
 func CardValidate(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (int, error) {
 	vars := mux.Vars(r)
+
+	color.Green("%s - card validation (UID: %s)", r.RemoteAddr, vars["id"])
 
 	c.Services.Cards.GetByUID(vars["id"])
 	return 200, nil
