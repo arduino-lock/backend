@@ -13,5 +13,5 @@ type CardService interface {
 	Add(c *Card) error
 	GetByUID(uid string) (*Card, error)
 	GetAll() (*[]Card, error)
-	Delete(c *Card) error
+	Delete(uid string) error
 }
