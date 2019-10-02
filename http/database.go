@@ -8,7 +8,7 @@ import (
 
 // DatabaseDump calls a database dumping method
 func DatabaseDump(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (int, error) {
-	c.Services.Database.DatabasePrint(c.Development)
+	c.Services.Database.DatabaseDump(c.Development)
 
 	return 200, nil
 }

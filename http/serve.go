@@ -15,15 +15,15 @@ func Serve(c *golockserver.Config) {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/time", Wrap(GetTime, c)).Methods("GET")
-	r.HandleFunc("/validate", Wrap(CardValidate, c)).Methods("POST")
+	r.HandleFunc("/validate/{id}", Wrap(CardValidate, c)).Methods("GET", "POST")
 
 	// database subrouter
 	database := r.PathPrefix("/database").Subrouter()
 	database.HandleFunc("/dump", Wrap(DatabaseDump, c)).Methods("GET")
 
 	// cards subrouter
-	cards := r.PathPrefix("/cards/").Subrouter()
-	cards.HandleFunc("/add/{id:[a-z]+}", Wrap(CardAdd, c)).Methods("POST")
+	cards := r.PathPrefix("/cards").Subrouter()
+	cards.HandleFunc("/add/{id}", Wrap(CardAdd, c)).Methods("POST")
 	cards.HandleFunc("/get/all", Wrap(CardGetAll, c)).Methods("GET")
 	cards.HandleFunc("/get/{id:[a-z]+}", Wrap(CardGet, c)).Methods("GET")
 

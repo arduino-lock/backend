@@ -1,6 +1,7 @@
 package boltdb
 
 import (
+	"errors"
 	"strconv"
 	"time"
 
@@ -38,9 +39,7 @@ func (s *CardService) Add(card *golockserver.Card) error {
 
 // GetByUID fetches a card (given its unique ID) from the database
 func (s *CardService) GetByUID(uid string) (*golockserver.Card, error) {
-	card := &golockserver.Card{
-		UID: uid,
-	}
+	var card *golockserver.Card
 
 	err := s.DB.View(func(tx *bolt.Tx) error {
 		// select cards bucket
@@ -48,6 +47,14 @@ func (s *CardService) GetByUID(uid string) (*golockserver.Card, error) {
 
 		// Get value from database
 		createdStr := string(b.Get([]byte(uid)))
+
+		if len(createdStr) == 0 {
+			return errors.New("Card not found")
+		}
+
+		card = &golockserver.Card{
+			UID: uid,
+		}
 
 		// Convert UNIX timestamp string to int64
 		var convErr error
@@ -62,7 +69,7 @@ func (s *CardService) GetByUID(uid string) (*golockserver.Card, error) {
 	})
 
 	if err != nil {
-		return card, err
+		return nil, err
 	}
 
 	return card, nil

@@ -15,6 +15,5 @@ func GetTime(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (in
 	color.Green("%s - local time.", r.RemoteAddr)
 
 	_, err := w.Write([]byte(now.String()))
-
 	return 200, err
 }

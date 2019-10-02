@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"time"
 
 	"github.com/boltdb/bolt"
 	"github.com/fatih/color"
@@ -34,8 +35,8 @@ func (s *DatabaseService) Setup(db *bolt.DB) error {
 	return nil
 }
 
-// DatabasePrint is a function that prints all data in the database
-func (s *DatabaseService) DatabasePrint(development bool) error {
+// DatabaseDump is a function that prints all data in the database
+func (s *DatabaseService) DatabaseDump(development bool) error {
 	BUCKETS := []string{"cards", "doors"}
 
 	if development {
@@ -50,13 +51,23 @@ func (s *DatabaseService) DatabasePrint(development bool) error {
 				items := 0
 
 				if err := b.ForEach(func(key []byte, val []byte) error {
+					items++
+
 					// parse unix epoch string to int64
-					_, err := strconv.ParseInt(string(val), 10, 64)
+					unixTime, err := strconv.ParseInt(string(val), 10, 64)
 					if err != nil {
 						return err
 					}
 
-					items++
+					t := time.Unix(unixTime, 0)
+
+					if currentBucket == "cards" {
+						fmt.Printf("Card UID: ")
+						color.Green(string(key))
+
+						fmt.Printf("Card creation date: ")
+						color.Green(t.String())
+					}
 
 					return nil
 				}); err != nil {
