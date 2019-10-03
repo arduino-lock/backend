@@ -15,6 +15,7 @@ func Wrap(h LockHandler, c *golockserver.Config) http.HandlerFunc {
 		// leave the data treatment and the response final handling
 		// to the end of the wrapping function
 		defer func(w http.ResponseWriter) {
+			w.Header().Set("Content-Type", "application/json")
 		}(w)
 
 		code, err := h(w, r, c)

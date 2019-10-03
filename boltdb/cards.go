@@ -113,6 +113,17 @@ func (s *CardService) GetAll() (*[]golockserver.Card, error) {
 }
 
 // Delete deletes a card from the database
-func (s *CardService) Delete(c *golockserver.Card) error {
+func (s *CardService) Delete(uid string) error {
+	if err := s.DB.Update(func(tx *bolt.Tx) error {
+		err := tx.Bucket([]byte("cards")).Delete([]byte(uid))
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}); err != nil {
+		return err
+	}
+
 	return nil
 }

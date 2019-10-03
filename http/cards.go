@@ -70,3 +70,15 @@ func CardGetAll(w http.ResponseWriter, r *http.Request, c *golockserver.Config) 
 	jsonPrint(w, cards)
 	return http.StatusOK, nil
 }
+
+// CardDelete deletes a card given its id
+func CardDelete(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (int, error) {
+	id := mux.Vars(r)["id"]
+
+	err := c.Services.Cards.Delete(id)
+	if err != nil {
+
+	}
+
+	return http.StatusOK, nil
+}
