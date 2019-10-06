@@ -76,7 +76,7 @@ func (s *DoorService) GetByUID(uid string) (*golockserver.Door, error) {
 
 		// check if door exists
 		if len(doorBuff) == 0 {
-			return errors.New(golockserver.CardNotFound)
+			return errors.New(golockserver.DoorNotFound)
 		}
 
 		// decode buffer intro struct

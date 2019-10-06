@@ -32,6 +32,7 @@ func Serve(c *golockserver.Config) {
 	doors := r.PathPrefix("/doors").Subrouter()
 	doors.HandleFunc("/install", Wrap(DoorInstall, c)).Methods("POST")
 	doors.HandleFunc("/get/all", Wrap(DoorGetAll, c)).Methods("GET")
+	doors.HandleFunc("/get/{uid}", Wrap(DoorGetByUID, c)).Methods("GET")
 	doors.HandleFunc("/uninstall/{uid}", Wrap(DoorUninstall, c)).Methods("DELETE")
 
 	fmt.Print("Listening on port ")

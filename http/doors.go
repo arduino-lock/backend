@@ -41,6 +41,22 @@ func DoorGetAll(w http.ResponseWriter, r *http.Request, c *golockserver.Config) 
 	return jsonPrint(w, doors)
 }
 
+// DoorGetByUID creates a new door in the database
+func DoorGetByUID(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (int, error) {
+	uid := mux.Vars(r)["uid"]
+
+	door, err := c.Services.Doors.GetByUID(uid)
+	if err != nil {
+		if err.Error() == golockserver.DoorNotFound {
+			return http.StatusNotFound, nil
+		}
+
+		return http.StatusInternalServerError, err
+	}
+
+	return jsonPrint(w, door)
+}
+
 // DoorUninstall creates a new door in the database
 func DoorUninstall(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (int, error) {
 	uid := mux.Vars(r)["uid"]
