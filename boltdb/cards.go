@@ -52,7 +52,7 @@ func (s *CardService) GetByUID(uid string) (*golockserver.Card, error) {
 
 		// Check if card exists
 		if len(cardBytes) == 0 {
-			return errors.New(CardNotFound)
+			return errors.New(golockserver.CardNotFound)
 		}
 
 		// Decode it

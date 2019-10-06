@@ -68,6 +68,10 @@ func CardGet(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (in
 
 	card, err := c.Services.Cards.GetByUID(id)
 	if err != nil {
+		if err.Error() == golockserver.CardNotFound {
+			return http.StatusNotFound, nil
+		}
+
 		return http.StatusInternalServerError, err
 	}
 
@@ -90,7 +94,7 @@ func CardDelete(w http.ResponseWriter, r *http.Request, c *golockserver.Config) 
 
 	err := c.Services.Cards.Delete(id)
 	if err != nil {
-
+		return http.StatusInternalServerError, nil
 	}
 
 	return http.StatusOK, nil
