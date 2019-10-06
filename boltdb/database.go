@@ -1,11 +1,11 @@
 package boltdb
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
-	"strconv"
-	"time"
 
+	"github.com/arduino-lock/golockserver"
 	"github.com/boltdb/bolt"
 	"github.com/fatih/color"
 )
@@ -15,6 +15,11 @@ import (
 type DatabaseService struct {
 	DB *bolt.DB
 }
+
+// All constants
+const (
+	CardNotFound = "CardNotFound"
+)
 
 // Setup is a function that generates all buckets inside the db
 func (s *DatabaseService) Setup(db *bolt.DB) error {
@@ -37,7 +42,7 @@ func (s *DatabaseService) Setup(db *bolt.DB) error {
 
 // DatabaseDump is a function that prints all data in the database
 func (s *DatabaseService) DatabaseDump(development bool) error {
-	BUCKETS := []string{"cards", "doors"}
+	BUCKETS := []string{"cards"}
 
 	if development {
 		for i := 0; i < len(BUCKETS); i++ {
@@ -53,20 +58,18 @@ func (s *DatabaseService) DatabaseDump(development bool) error {
 				if err := b.ForEach(func(key []byte, val []byte) error {
 					items++
 
-					// parse unix epoch string to int64
-					unixTime, err := strconv.ParseInt(string(val), 10, 64)
-					if err != nil {
-						return err
-					}
+					var card *golockserver.Card
 
-					t := time.Unix(unixTime, 0)
+					// decode card into struct instance
+					e := json.Unmarshal(val, card)
+					if e != nil {
+						return e
+					}
+					fmt.Println(card)
 
 					if currentBucket == "cards" {
 						fmt.Printf("Card UID: ")
 						color.Green(string(key))
-
-						fmt.Printf("Card creation date: ")
-						color.Green(t.String())
 					}
 
 					return nil

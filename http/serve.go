@@ -23,9 +23,9 @@ func Serve(c *golockserver.Config) {
 
 	// cards subrouter
 	cards := r.PathPrefix("/cards").Subrouter()
-	cards.HandleFunc("/add/{id}", Wrap(CardAdd, c)).Methods("POST")
+	cards.HandleFunc("/add", Wrap(CardAdd, c)).Methods("POST")
 	cards.HandleFunc("/get/all", Wrap(CardGetAll, c)).Methods("GET")
-	cards.HandleFunc("/get/{id:[a-z]+}", Wrap(CardGet, c)).Methods("GET")
+	cards.HandleFunc("/get/{id}", Wrap(CardGet, c)).Methods("GET")
 	cards.HandleFunc("/delete/{id}", Wrap(CardDelete, c)).Methods("POST")
 
 	fmt.Print("Listening on port ")

@@ -6,7 +6,7 @@ import (
 )
 
 func jsonPrint(w http.ResponseWriter, d interface{}) (int, error) {
-	data, err := json.MarshalIndent(d, "", "  ")
+	data, err := json.MarshalIndent(d, "", "\t")
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}

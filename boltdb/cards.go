@@ -1,9 +1,8 @@
 package boltdb
 
 import (
+	"encoding/json"
 	"errors"
-	"strconv"
-	"time"
 
 	"github.com/boltdb/bolt"
 
@@ -18,15 +17,18 @@ type CardService struct {
 
 // Add adds a new card to the database
 func (s *CardService) Add(card *golockserver.Card) error {
-	// create a string with UNIX time value
-	nowUNIX := strconv.FormatInt(card.Created.Unix(), 10)
-
 	err := s.DB.Update(func(tx *bolt.Tx) error {
 		// select cards bucket
 		b := tx.Bucket([]byte("cards"))
 
+		// Encode Card struct to json
+		cardJSON, e := json.Marshal(card)
+		if e != nil {
+			return e
+		}
+
 		// put new data into the bucket
-		err := b.Put([]byte(card.UID), []byte(nowUNIX))
+		err := b.Put([]byte(card.UID), cardJSON)
 		return err
 	})
 
@@ -41,34 +43,25 @@ func (s *CardService) Add(card *golockserver.Card) error {
 func (s *CardService) GetByUID(uid string) (*golockserver.Card, error) {
 	var card *golockserver.Card
 
-	err := s.DB.View(func(tx *bolt.Tx) error {
+	if err := s.DB.View(func(tx *bolt.Tx) error {
 		// select cards bucket
 		b := tx.Bucket([]byte("cards"))
 
 		// Get value from database
-		createdStr := string(b.Get([]byte(uid)))
+		cardBytes := b.Get([]byte(uid))
 
-		if len(createdStr) == 0 {
-			return errors.New("Card not found")
+		// Check if card exists
+		if len(cardBytes) == 0 {
+			return errors.New(CardNotFound)
 		}
 
-		card = &golockserver.Card{
-			UID: uid,
+		// Decode it
+		if e := json.Unmarshal(cardBytes, &card); e != nil {
+			return e
 		}
-
-		// Convert UNIX timestamp string to int64
-		var convErr error
-		createdUnix, convErr := strconv.ParseInt(createdStr, 10, 64)
-		if convErr != nil {
-			return convErr
-		}
-
-		card.Created = time.Unix(createdUnix, 0)
 
 		return nil
-	})
-
-	if err != nil {
+	}); err != nil {
 		return nil, err
 	}
 
@@ -84,16 +77,11 @@ func (s *CardService) GetAll() (*[]golockserver.Card, error) {
 		b := tx.Bucket([]byte("cards"))
 
 		if err := b.ForEach(func(key []byte, val []byte) error {
-			// parse unix epoch string to int64
-			unixInt, err := strconv.ParseInt(string(val), 10, 64)
-			if err != nil {
-				return err
-			}
+			var newCard golockserver.Card
 
-			// create new card
-			newCard := golockserver.Card{
-				UID:     string(key),
-				Created: time.Unix(unixInt, 0),
+			e := json.Unmarshal(val, &newCard)
+			if e != nil {
+				return e
 			}
 
 			// append new card to cards list
@@ -115,9 +103,8 @@ func (s *CardService) GetAll() (*[]golockserver.Card, error) {
 // Delete deletes a card from the database
 func (s *CardService) Delete(uid string) error {
 	if err := s.DB.Update(func(tx *bolt.Tx) error {
-		err := tx.Bucket([]byte("cards")).Delete([]byte(uid))
-		if err != nil {
-			return err
+		if e := tx.Bucket([]byte("cards")).Delete([]byte(uid)); e != nil {
+			return e
 		}
 
 		return nil

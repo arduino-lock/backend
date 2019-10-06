@@ -1,6 +1,8 @@
 package http
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -32,16 +34,29 @@ func CardValidate(w http.ResponseWriter, r *http.Request, c *golockserver.Config
 
 // CardAdd creates a new card in the database
 func CardAdd(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (int, error) {
-	id := mux.Vars(r)["id"]
-
-	card := &golockserver.Card{
-		UID:     id,
+	newCard := &golockserver.Card{
 		Created: time.Now(),
 	}
 
-	err := c.Services.Cards.Add(card)
+	// buffer to read request body
+	bodyBuffer := new(bytes.Buffer)
+	bodyBuffer.ReadFrom(r.Body)
+
+	// Parse bytes into JSON format
+	err := json.Unmarshal(bodyBuffer.Bytes(), newCard)
 	if err != nil {
-		return 500, err
+		return http.StatusBadRequest, err
+	}
+
+	// Check if a card with the same ID and the new one exists
+	_, err = c.Services.Cards.GetByUID(newCard.UID)
+	if err == nil {
+		return http.StatusConflict, nil
+	}
+
+	err = c.Services.Cards.Add(newCard)
+	if err != nil {
+		return http.StatusInternalServerError, err
 	}
 
 	return http.StatusOK, nil
@@ -56,8 +71,7 @@ func CardGet(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (in
 		return http.StatusInternalServerError, err
 	}
 
-	jsonPrint(w, card)
-	return http.StatusOK, nil
+	return jsonPrint(w, card)
 }
 
 // CardGetAll fetches all cards from the database
@@ -67,8 +81,7 @@ func CardGetAll(w http.ResponseWriter, r *http.Request, c *golockserver.Config) 
 		return http.StatusInternalServerError, err
 	}
 
-	jsonPrint(w, cards)
-	return http.StatusOK, nil
+	return jsonPrint(w, cards)
 }
 
 // CardDelete deletes a card given its id
