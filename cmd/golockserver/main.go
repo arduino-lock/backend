@@ -34,6 +34,9 @@ func main() {
 			Database: &boltdb.DatabaseService{
 				DB: db,
 			},
+			Doors: &boltdb.DoorService{
+				DB: db,
+			},
 		},
 	}
 

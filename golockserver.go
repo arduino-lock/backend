@@ -12,4 +12,5 @@ type Config struct {
 type Services struct {
 	Cards    CardService
 	Database DatabaseService
+	Doors    DoorService
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/arduino-lock/golockserver"
 )
 
-// CardService is a struct that implements CardService and provies with all
+// CardService is a struct that implements CardService and provides with all
 // the functions related to dababase and data management
 type CardService struct {
 	DB *bolt.DB
@@ -47,15 +47,15 @@ func (s *CardService) GetByUID(uid string) (*golockserver.Card, error) {
 		// select cards bucket
 		b := tx.Bucket([]byte("cards"))
 
-		// Get value from database
+		// get value from database
 		cardBytes := b.Get([]byte(uid))
 
-		// Check if card exists
+		// check if card exists
 		if len(cardBytes) == 0 {
 			return errors.New(golockserver.CardNotFound)
 		}
 
-		// Decode it
+		// decode it
 		if e := json.Unmarshal(cardBytes, &card); e != nil {
 			return e
 		}
