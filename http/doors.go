@@ -3,6 +3,7 @@ package http
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/arduino-lock/golockserver"
@@ -63,6 +64,23 @@ func DoorUninstall(w http.ResponseWriter, r *http.Request, c *golockserver.Confi
 
 	err := c.Services.Doors.Uninstall(uid)
 	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	return http.StatusOK, nil
+}
+
+// DoorAddCard adds a new card to the door given both of its UIDs
+func DoorAddCard(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (int, error) {
+	vars := mux.Vars(r)
+
+	doorUID := vars["doorUID"]
+	cardUID := vars["cardUID"]
+
+	err := c.Services.Doors.AddCard(doorUID, cardUID)
+	if err != nil {
+		fmt.Println(err)
+
 		return http.StatusInternalServerError, err
 	}
 

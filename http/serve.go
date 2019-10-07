@@ -34,6 +34,7 @@ func Serve(c *golockserver.Config) {
 	doors.HandleFunc("/get/all", Wrap(DoorGetAll, c)).Methods("GET")
 	doors.HandleFunc("/get/{uid}", Wrap(DoorGetByUID, c)).Methods("GET")
 	doors.HandleFunc("/uninstall/{uid}", Wrap(DoorUninstall, c)).Methods("DELETE")
+	doors.HandleFunc("/{doorUID}/cards/{cardUID}", Wrap(DoorAddCard, c)).Methods("PATCH")
 
 	fmt.Print("Listening on port ")
 	color.Green(c.Port)

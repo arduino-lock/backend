@@ -26,7 +26,7 @@ func (s *DoorService) Install(door *golockserver.Door) error {
 		hashBytes := sha256.Sum256([]byte(time.Now().String()))
 
 		door.UID = hex.EncodeToString(hashBytes[:])
-		door.Cards = &[]string{}
+		door.Cards = []string{}
 
 		// Create bytes buffer from door struct
 		buf, e := json.Marshal(door)
@@ -126,12 +126,68 @@ func (s *DoorService) GetAll() (*[]golockserver.Door, error) {
 }
 
 // AddCard adds a new card to the door
-func (s *DoorService) AddCard(d *golockserver.Door, c *golockserver.Card) error {
+func (s *DoorService) AddCard(doorUID string, cardUID string) error {
+	// fetch door
+	door, err := s.GetByUID(doorUID)
+	if err != nil {
+		// door not found
+		if err.Error() == golockserver.DoorNotFound {
+			return errors.New(golockserver.DoorNotFound)
+		}
+
+		return err
+	}
+
+	// check if card exists or needs to be created
+	card := &golockserver.Card{
+		UID: cardUID,
+	}
+
+	if err = s.DB.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("cards"))
+
+		cardBuff := b.Get([]byte(card.UID))
+
+		if len(cardBuff) > 0 {
+			// card exists and is parsed into struct
+			if e := json.Unmarshal(cardBuff, &card); e != nil {
+				return e
+			}
+		} else {
+			card.Created = time.Now()
+
+			// card doesn't exist and is therefore created and saved in database
+			cardBuff, e := json.Marshal(card)
+			if e != nil {
+				return e
+			}
+
+			// save card in database
+			b.Put([]byte(card.UID), cardBuff)
+		}
+
+		// update door's cards array
+		door.Cards = append(door.Cards, card.UID)
+
+		// encode door struct
+		doorBuff, e := json.Marshal(door)
+		if e != nil {
+			return e
+		}
+
+		// save door in database
+		tx.Bucket([]byte("doors")).Put([]byte(door.UID), doorBuff)
+
+		return nil
+	}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 // GetCardByUID fetches the door's card with the given UID
-func (s *DoorService) GetCardByUID(d *golockserver.Door, uid string) (*golockserver.Card, error) {
+func (s *DoorService) GetCardByUID(doorUID string, cardUID string) (*golockserver.Card, error) {
 	return nil, nil
 }
 

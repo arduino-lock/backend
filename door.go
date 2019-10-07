@@ -3,7 +3,7 @@ package golockserver
 //Door is the structure that represents every door installed
 type Door struct {
 	UID         string
-	Cards       *[]string
+	Cards       []string
 	Description string
 }
 
@@ -16,8 +16,8 @@ type DoorService interface {
 	GetAll() (*[]Door, error)
 
 	// Door's cards
-	AddCard(d *Door, c *Card) error
-	GetCardByUID(d *Door, uid string) (*Card, error)
+	AddCard(doorUID string, cardUID string) error
+	GetCardByUID(doorUID string, cardUID string) (*Card, error)
 	GetAllCards() (*[]Card, error)
 	RemoveCard(uid string) error
 }
