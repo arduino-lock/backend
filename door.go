@@ -17,7 +17,6 @@ type DoorService interface {
 
 	// Door's cards
 	AddCard(doorUID string, cardUID string) error
-	GetCardByUID(doorUID string, cardUID string) (*Card, error)
-	GetAllCards() (*[]Card, error)
-	RemoveCard(uid string) error
+	GetAllCards(doorUID string) (*[]Card, error)
+	RemoveCard(doorUID string, cardUID string) error
 }

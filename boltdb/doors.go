@@ -186,17 +186,59 @@ func (s *DoorService) AddCard(doorUID string, cardUID string) error {
 	return nil
 }
 
-// GetCardByUID fetches the door's card with the given UID
-func (s *DoorService) GetCardByUID(doorUID string, cardUID string) (*golockserver.Card, error) {
-	return nil, nil
-}
-
 // GetAllCards fetches all cards of the given door
-func (s *DoorService) GetAllCards() (*[]golockserver.Card, error) {
-	return nil, nil
+func (s *DoorService) GetAllCards(doorUID string) (*[]golockserver.Card, error) {
+	// fetch door by uid
+	door, err := s.GetByUID(doorUID)
+	if err != nil {
+		return nil, err
+	}
+
+	cards := []golockserver.Card{}
+
+	for i := 0; i < len(door.Cards); i++ {
+		if e := s.DB.View(func(tx *bolt.Tx) error {
+			b := tx.Bucket([]byte("cards"))
+
+			// fetch card bytes
+			cardBytes := b.Get([]byte(door.Cards[i]))
+
+			card := golockserver.Card{}
+
+			// decode bytes into stuct
+			if e := json.Unmarshal(cardBytes, &card); e != nil {
+				return e
+			}
+
+			cards = append(cards, card)
+
+			return nil
+		}); e != nil {
+			return nil, e
+		}
+	}
+
+	return &cards, nil
 }
 
 // RemoveCard removes a card from the given door
-func (s *DoorService) RemoveCard(uid string) error {
+func (s *DoorService) RemoveCard(doorUID string, cardUID string) error {
+	if err := s.DB.Update(func(tx *bolt.Tx) error {
+		b := tx.Bucket([]byte("doors"))
+
+		// fetch door bytes by its given uid
+		doorBytes := b.Get([]byte(doorUID))
+
+		door := golockserver.Door{}
+		// decode into struct
+		if e := json.Unmarshal(doorBytes, &door); e != nil {
+			return e
+		}
+
+		return nil
+	}); err != nil {
+		return err
+	}
+
 	return nil
 }

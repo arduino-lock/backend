@@ -3,7 +3,6 @@ package http
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 
 	"github.com/arduino-lock/golockserver"
@@ -79,7 +78,46 @@ func DoorAddCard(w http.ResponseWriter, r *http.Request, c *golockserver.Config)
 
 	err := c.Services.Doors.AddCard(doorUID, cardUID)
 	if err != nil {
-		fmt.Println(err)
+		if err.Error() == golockserver.DoorNotFound {
+			return http.StatusNotFound, nil
+		}
+
+		return http.StatusInternalServerError, err
+	}
+
+	return http.StatusOK, nil
+}
+
+// DoorGetAllCards fetches all door's cards
+func DoorGetAllCards(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (int, error) {
+	vars := mux.Vars(r)
+
+	doorUID := vars["doorUID"]
+
+	cards, err := c.Services.Doors.GetAllCards(doorUID)
+	if err != nil {
+		if err.Error() == golockserver.DoorNotFound {
+			return http.StatusNotFound, nil
+		}
+
+		return http.StatusInternalServerError, err
+	}
+
+	return jsonPrint(w, cards)
+}
+
+// DoorRemoveCard removes a card from a door's card list
+func DoorRemoveCard(w http.ResponseWriter, r *http.Request, c *golockserver.Config) (int, error) {
+	vars := mux.Vars(r)
+
+	doorUID := vars["doorUID"]
+	cardUID := vars["cardUID"]
+
+	err := c.Services.Doors.RemoveCard(doorUID, cardUID)
+	if err != nil {
+		if err.Error() == golockserver.DoorNotFound {
+			return http.StatusNotFound, nil
+		}
 
 		return http.StatusInternalServerError, err
 	}
