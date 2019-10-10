@@ -236,7 +236,10 @@ func (s *DoorService) RemoveCard(doorUID string, cardUID string) error {
 		}
 
 		// find card index in door's cards array
-		cardIndex := golockserver.BinarySearch(door.Cards, cardUID)
+		cardIndex := golockserver.FindArrElement(door.Cards, cardUID)
+		if cardIndex == -1 {
+			return errors.New(golockserver.CardNotFound)
+		}
 		door.Cards = append(door.Cards[:cardIndex], door.Cards[cardIndex+1:]...)
 
 		// encode struct into json again
